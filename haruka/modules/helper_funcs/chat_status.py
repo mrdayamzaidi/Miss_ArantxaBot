@@ -114,7 +114,6 @@ def user_admin(func):
     @wraps(func)
     def is_admin(bot: Bot, update: Update, *args, **kwargs):
         user = update.effective_user  # type: Optional[User]
-        chat = update.effective_chat  # type: Optional[Chat]
         if user and is_user_admin(update.effective_chat, user.id):
             return func(bot, update, *args, **kwargs)
 
@@ -124,7 +123,7 @@ def user_admin(func):
         elif DEL_CMDS and " " not in update.effective_message.text:
             update.effective_message.delete()
 
-        elif (admin_sql.command_reaction(chat.id) == True):
+        else:
             update.effective_message.reply_text("Who dis non-admin telling me what to do?")
 
     return is_admin
@@ -154,14 +153,3 @@ def user_not_admin(func):
             return func(bot, update, *args, **kwargs)
 
     return is_not_admin
-
-
-def user_is_gbanned(func):
-    @wraps(func)
-    def is_user_gbanned(bot: Bot, update: Update, *args, **kwargs):
-        if not sql.is_user_gbanned(update.effective_user.id):
-            return func(bot, update, *args, **kwargs)
-        else:
-            pass
-    return is_user_gbanned
-
