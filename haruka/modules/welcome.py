@@ -83,34 +83,34 @@ def send(update, message, keyboard, backup_message):
 @run_async
 @user_admin
 @loggable
-def del_joined(bot: Bot, update: Update, args: List[str]) -> str:
+def clean_welcome(bot: Bot, update: Update, args: List[str]) -> str:
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
 
     if not args:
-        del_pref = sql.get_del_pref(chat.id)
-        if del_pref:
-            update.effective_message.reply_text("I should be deleting `user` joined the chat messages now.")
+        clean_pref = sql.get_clean_pref(chat.id)
+        if clean_pref:
+            update.effective_message.reply_text("I should be deleting welcome messages up to two days old.")
         else:
-            update.effective_message.reply_text("I'm currently not deleting old joined messages!")
+            update.effective_message.reply_text("I'm currently not deleting old welcome messages!")
         return ""
 
     if args[0].lower() in ("on", "yes"):
-        sql.set_del_joined(str(chat.id), True)
-        update.effective_message.reply_text("I'll try to delete old joined messages!")
+        sql.set_clean_welcome(str(chat.id), True)
+        update.effective_message.reply_text("I'll try to delete old welcome messages!")
         return "<b>{}:</b>" \
-               "\n#CLEAN_SERVICE_MESSAGE" \
+               "\n#CLEAN_WELCOME" \
                "\n<b>Admin:</b> {}" \
-               "\nHas toggled join deletion to <code>ON</code>.".format(html.escape(chat.title),
+               "\nHas toggled clean welcomes to <code>ON</code>.".format(escape(chat.title),
                                                                          mention_html(user.id, user.first_name))
     elif args[0].lower() in ("off", "no"):
-        sql.set_del_joined(str(chat.id), False)
-        update.effective_message.reply_text("I won't delete old joined messages.")
+        sql.set_clean_welcome(str(chat.id), False)
+        update.effective_message.reply_text("I won't delete old welcome messages.")
         return "<b>{}:</b>" \
-               "\n#CLEAN_SERVICE_MESSAGE" \
+               "\n#CLEAN_WELCOME" \
                "\n<b>Admin:</b> {}" \
-               "\nHas toggled joined deletion to <code>OFF</code>.".format(html.escape(chat.title),
-                                                                          mention_html(user.id, user.first_name))
+               "\nHas toggled clean welcomes to <code>OFF</code>.".format(escape(chat.title),
+                                                                                   mention_html(user.id, user.first_name))
     else:
         # idek what you're writing, say yes or no
         update.effective_message.reply_text("I understand 'on/yes' or 'off/no' only!")
