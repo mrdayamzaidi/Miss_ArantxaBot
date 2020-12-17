@@ -134,7 +134,7 @@ def start(bot: Bot, update: Update, args: List[str]):
         else:
             send_start(bot, update)
     else:
-        update.effective_message.reply_text("I'm alive")
+        update.effective_message.reply_text("I'm alive But I Am Hungry. Lets Have Dinner At Your Place")
 
 def send_start(bot, update):
     #Try to remove old message
