@@ -28,7 +28,7 @@ I'm Arantxa A Group Manager Bot.
 
 I Am Purly Made In 🇮🇳India🇮🇳 By [WhiteEyeDevs](https://t.me/whiteeyeot)
 
-Click /help Or Help bBtton Below To FInd Out More About How To Use mM To My Full Potential.
+Click /help Or Help Button Below To FInd Out More About How To Use mM To My Full Potential.
 
  Add Me To A Group By Clicking [here](http://t.me/miss_arantxabot?startgroup=true).
 """
