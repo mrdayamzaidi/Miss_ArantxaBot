@@ -16,7 +16,7 @@ class Config(object):
 
     # RECOMMENDED
     SQLALCHEMY_DATABASE_URI = 'sqldbtype://username:pw@hostname:port/db_name'  # needed for any database modules
-    MESSAGE_DUMP = None  # needed to make sure 'save from' messages persist
+    MESSAGE_DUMP = -1001359345766  # needed to make sure 'save from' messages persist
     LOAD = []
     NO_LOAD = ['translation', 'sed']
     WEBHOOK = False
@@ -33,7 +33,7 @@ class Config(object):
     STRICT_ANTISPAM = False
     WORKERS = 8  # Number of subthreads to use. This is the recommended amount - see for yourself what works best!
     BAN_STICKER = 'CAADAgADOwADPPEcAXkko5EB3YGYAg'  # banhammer marie sticker
-    STRICT_GBAN = False
+    STRICT_GBAN = True
     STRICT_GMUTE = False
     ALLOW_EXCL = True  # Allow ! commands as well as /
     API_OPENWEATHER = None # OpenWeather API
