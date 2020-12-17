@@ -30,7 +30,7 @@ I Am Purly Made In 🇮🇳India🇮🇳 By [WhiteEyeDevs](https://t.me/whiteeye
 
 Click /help Or Help bBtton Below To FInd Out More About How To Use mM To My Full Potential.
 
- Add Me To A Group By Clicking [here](http://t.me/tg_GroupManagerBot?startgroup=true).
+ Add Me To A Group By Clicking [here](http://t.me/miss_arantxabot?startgroup=true).
 """
 
 
@@ -149,7 +149,7 @@ def send_start(bot, update):
     text = PM_START
 
     keyboard = [[InlineKeyboardButton(text="🇮🇳 Language", callback_data="set_lang_")]]
-    InlineKeyboardButton(text=Support Group(chat.id, 'main_start_btn_support'), url="https://t.me/HarukaAyaGroup"), 
+     keyboard += [[InlineKeyboardButton(text="🛠 Support Group", callback_data="cntrl_panel_M"), 
         InlineKeyboardButton(text="❔ Help", callback_data="help_back")]]
 
     update.effective_message.reply_text(PM_START.format(escape_markdown(first_name), bot.first_name), reply_markup=InlineKeyboardMarkup(keyboard), disable_web_page_preview=True, parse_mode=ParseMode.MARKDOWN)
