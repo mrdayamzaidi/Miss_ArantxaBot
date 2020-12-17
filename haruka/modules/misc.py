@@ -22,7 +22,6 @@ from telegram.utils.helpers import escape_markdown, mention_html
 from telegram.error import BadRequest
 
 from haruka import dispatcher, OWNER_ID, SUDO_USERS, SUPPORT_USERS, WHITELIST_USERS, BAN_STICKER
-from haruka.__main__ import GDPR
 from haruka.__main__ import STATS, USER_INFO
 from haruka.modules.disable import DisableAbleCommandHandler
 from haruka.modules.helper_funcs.chat_status import user_is_gbanned
@@ -38,25 +37,130 @@ from haruka.modules.translations.strings import tld
 from requests import get
 
 
-@user_is_gbanned
-@run_async
-def insults(bot: Bot, update: Update):
-    chat = update.effective_chat  # type: Optional[Chat]
-    text = random.choice(tld(chat.id, "INSULTS-K"))
-    update.effective_message.reply_text(text)
+RUN_STRINGS = (
+    "Where do you think you're going?",
+    "Huh? what? did they get away?",
+    "ZZzzZZzz... Huh? what? oh, just them again, nevermind.",
+    "Get back here!",
+    "Not so fast...",
+    "Look out for the wall!",
+    "Don't leave me alone with them!!",
+    "You run, you die.",
+    "Jokes on you, I'm everywhere",
+    "You're gonna regret that...",
+    "You could also try /kickme, I hear that's fun.",
+    "Go bother someone else, no-one here cares.",
+    "You can run, but you can't hide.",
+    "Is that all you've got?",
+    "I'm behind you...",
+    "You've got company!",
+    "We can do this the easy way, or the hard way.",
+    "You just don't get it, do you?",
+    "Yeah, you better run!",
+    "Please, remind me how much I care?",
+    "I'd run faster if I were you.",
+    "That's definitely the droid we're looking for.",
+    "May the odds be ever in your favour.",
+    "Famous last words.",
+    "And they disappeared forever, never to be seen again.",
+    "\"Oh, look at me! I'm so cool, I can run from a bot!\" - this person",
+    "Yeah yeah, just tap /kickme already.",
+    "Here, take this ring and head to Mordor while you're at it.",
+    "Legend has it, they're still running...",
+    "Unlike Harry Potter, your parents can't protect you from me.",
+    "Fear leads to anger. Anger leads to hate. Hate leads to suffering. If you keep running in fear, you might "
+    "be the next Vader.",
+    "Multiple calculations later, I have decided my interest in your shenanigans is exactly 0.",
+    "Legend has it, they're still running.",
+    "Keep it up, not sure we want you here anyway.",
+    "You're a wiza- Oh. Wait. You're not Harry, keep moving.",
+    "NO RUNNING IN THE HALLWAYS!",
+    "Hasta la vista, baby.",
+    "Who let the dogs out?",
+    "It's funny, because no one cares.",
+    "Ah, what a waste. I liked that one.",
+    "Frankly, my dear, I don't give a damn.",
+    "My milkshake brings all the boys to yard... So run faster!",
+    "You can't HANDLE the truth!",
+    "A long time ago, in a galaxy far far away... Someone would've cared about that. Not anymore though.",
+    "Hey, look at them! They're running from the inevitable banhammer... Cute.",
+    "Han shot first. So will I.",
+    "What are you running after, a white rabbit?",
+    "As The Doctor would say... RUN!",
+)
+
+SLAP_TEMPLATES = (
+    "{user1} {hits} {user2} with a {item}.",
+    "{user1} {hits} {user2} in the face with a {item}.",
+    "{user1} {hits} {user2} around a bit with a {item}.",
+    "{user1} {throws} a {item} at {user2}.",
+    "{user1} grabs a {item} and {throws} it at {user2}'s face.",
+    "{user1} launches a {item} in {user2}'s general direction.",
+    "{user1} starts slapping {user2} silly with a {item}.",
+    "{user1} pins {user2} down and repeatedly {hits} them with a {item}.",
+    "{user1} grabs up a {item} and {hits} {user2} with it.",
+    "{user1} ties {user2} to a chair and {throws} a {item} at them.",
+    "{user1} gave a friendly push to help {user2} learn to swim in lava."
+)
+
+ITEMS = (
+    "cast iron skillet",
+    "large trout",
+    "baseball bat",
+    "cricket bat",
+    "wooden cane",
+    "nail",
+    "printer",
+    "shovel",
+    "CRT monitor",
+    "physics textbook",
+    "toaster",
+    "portrait of Richard Stallman",
+    "television",
+    "five ton truck",
+    "roll of duct tape",
+    "book",
+    "laptop",
+    "old television",
+    "sack of rocks",
+    "rainbow trout",
+    "rubber chicken",
+    "spiked bat",
+    "fire extinguisher",
+    "heavy rock",
+    "chunk of dirt",
+    "beehive",
+    "piece of rotten meat",
+    "bear",
+    "ton of bricks",
+)
+
+THROW = (
+    "throws",
+    "flings",
+    "chucks",
+    "hurls",
+)
+
+HIT = (
+    "hits",
+    "whacks",
+    "slaps",
+    "smacks",
+    "bashes",
+)
+
+GMAPS_LOC = "https://maps.googleapis.com/maps/api/geocode/json"
+GMAPS_TIME = "https://maps.googleapis.com/maps/api/timezone/json"
 
 
-@user_is_gbanned
 @run_async
 def runs(bot: Bot, update: Update):
-    chat = update.effective_chat  # type: Optional[Chat]
-    update.effective_message.reply_text(random.choice(tld(chat.id, "RUNS-K")))
+    update.effective_message.reply_text(random.choice(RUN_STRINGS))
 
 
-@user_is_gbanned
 @run_async
 def slap(bot: Bot, update: Update, args: List[str]):
-    chat = update.effective_chat  # type: Optional[Chat]
     msg = update.effective_message  # type: Optional[Message]
 
     # reply to correct message
@@ -83,15 +187,12 @@ def slap(bot: Bot, update: Update, args: List[str]):
         user1 = "[{}](tg://user?id={})".format(bot.first_name, bot.id)
         user2 = curr_user
 
-    temp = random.choice(tld(chat.id, "SLAP_TEMPLATES-K"))
-    item = random.choice(tld(chat.id, "ITEMS-K"))
-    hit = random.choice(tld(chat.id, "HIT-K"))
-    throw = random.choice(tld(chat.id, "THROW-K"))
-    itemp = random.choice(tld(chat.id, "ITEMP-K"))
-    itemr = random.choice(tld(chat.id, "ITEMR-K"))
+    temp = random.choice(SLAP_TEMPLATES)
+    item = random.choice(ITEMS)
+    hit = random.choice(HIT)
+    throw = random.choice(THROW)
 
-    repl = temp.format(user1=user1, user2=user2, item=item, hits=hit, throws=throw, itemp=itemp, itemr=itemr)
-    #user1=user1, user2=user2, item=item_ru, hits=hit_ru, throws=throw_ru, itemp=itemp_ru, itemr=itemr_ru
+    repl = temp.format(user1=user1, user2=user2, item=item, hits=hit, throws=throw)
 
     reply_text(repl, parse_mode=ParseMode.MARKDOWN)
 
@@ -105,17 +206,15 @@ def get_bot_ip(bot: Bot, update: Update):
     update.message.reply_text(res.text)
 
 
-@user_is_gbanned
 @run_async
 def get_id(bot: Bot, update: Update, args: List[str]):
     user_id = extract_user(update.effective_message, args)
-    chat = update.effective_chat  # type: Optional[Chat]
     if user_id:
         if update.effective_message.reply_to_message and update.effective_message.reply_to_message.forward_from:
             user1 = update.effective_message.reply_to_message.from_user
             user2 = update.effective_message.reply_to_message.forward_from
-            update.effective_message.reply_text(tld(chat.id,
-                "The original sender, {}, has an ID of `{}`.\nThe forwarder, {}, has an ID of `{}`.").format(
+            update.effective_message.reply_text(
+                "The original sender, {}, has an ID of `{}`.\nThe forwarder, {}, has an ID of `{}`.".format(
                     escape_markdown(user2.first_name),
                     user2.id,
                     escape_markdown(user1.first_name),
@@ -123,25 +222,23 @@ def get_id(bot: Bot, update: Update, args: List[str]):
                 parse_mode=ParseMode.MARKDOWN)
         else:
             user = bot.get_chat(user_id)
-            update.effective_message.reply_text(tld(chat.id, "{}'s id is `{}`.").format(escape_markdown(user.first_name), user.id),
+            update.effective_message.reply_text("{}'s id is `{}`.".format(escape_markdown(user.first_name), user.id),
                                                 parse_mode=ParseMode.MARKDOWN)
     else:
         chat = update.effective_chat  # type: Optional[Chat]
         if chat.type == "private":
-            update.effective_message.reply_text(tld(chat.id, "Your id is `{}`.").format(chat.id),
+            update.effective_message.reply_text("Your id is `{}`.".format(chat.id),
                                                 parse_mode=ParseMode.MARKDOWN)
 
         else:
-            update.effective_message.reply_text(tld(chat.id, "This group's id is `{}`.").format(chat.id),
+            update.effective_message.reply_text("This group's id is `{}`.".format(chat.id),
                                                 parse_mode=ParseMode.MARKDOWN)
 
 
-@user_is_gbanned
 @run_async
 def info(bot: Bot, update: Update, args: List[str]):
     msg = update.effective_message  # type: Optional[Message]
     user_id = extract_user(update.effective_message, args)
-    chat = update.effective_chat  # type: Optional[Chat]
 
     if user_id:
         user = bot.get_chat(user_id)
@@ -152,44 +249,41 @@ def info(bot: Bot, update: Update, args: List[str]):
     elif not msg.reply_to_message and (not args or (
             len(args) >= 1 and not args[0].startswith("@") and not args[0].isdigit() and not msg.parse_entities(
         [MessageEntity.TEXT_MENTION]))):
-        msg.reply_text(tld(chat.id, "I can't extract a user from this."))
+        msg.reply_text("I can't extract a user from this.")
         return
 
     else:
         return
 
-    text =  tld(chat.id, "<b>User info</b>:")
-    text += "\nID: <code>{}</code>".format(user.id)
-    text += tld(chat.id, "\nFirst Name: {}").format(html.escape(user.first_name))
+    text = "<b>User info</b>:" \
+           "\nID: <code>{}</code>" \
+           "\nFirst Name: {}".format(user.id, html.escape(user.first_name))
 
     if user.last_name:
-        text += tld(chat.id, "\nLast Name: {}").format(html.escape(user.last_name))
+        text += "\nLast Name: {}".format(html.escape(user.last_name))
 
     if user.username:
-        text += tld(chat.id, "\nUsername: @{}").format(html.escape(user.username))
+        text += "\nUsername: @{}".format(html.escape(user.username))
 
-    text += tld(chat.id, "\nUser link: {}\n").format(mention_html(user.id, "link"))
+    text += "\nPermanent user link: {}".format(mention_html(user.id, "link"))
 
     if user.id == OWNER_ID:
-        text += tld(chat.id, "\n\nAy, This guy is my owner. I would never do anything against him!")
+        text += "\n\nThis person is my owner - I would never do anything against them!"
     else:
-        if user.id == int(254318997):
-            text += tld(chat.id, "\nThis person.... He is my god.")
-
         if user.id in SUDO_USERS:
-            text += tld(chat.id, "\nThis person is one of my sudo users! " \
-            "Nearly as powerful as my owner - so watch it.")
+            text += "\nThis person is one of my sudo users! " \
+                    "Nearly as powerful as my owner - so watch it."
         else:
             if user.id in SUPPORT_USERS:
-                text += tld(chat.id, "\nThis person is one of my support users! " \
-                        "Not quite a sudo user, but can still gban you off the map.")
+                text += "\nThis person is one of my support users! " \
+                        "Not quite a sudo user, but can still gban you off the map."
 
             if user.id in WHITELIST_USERS:
-                text += tld(chat.id, "\nThis person has been whitelisted! " \
-                        "That means I'm not allowed to ban/kick them.")
+                text += "\nThis person has been whitelisted! " \
+                        "That means I'm not allowed to ban/kick them."
 
     for mod in USER_INFO:
-        mod_info = mod.__user_info__(user.id, chat.id).strip()
+        mod_info = mod.__user_info__(user.id).strip()
         if mod_info:
             text += "\n\n" + mod_info
 
@@ -197,413 +291,182 @@ def info(bot: Bot, update: Update, args: List[str]):
 
 
 @run_async
+def get_time(bot: Bot, update: Update, args: List[str]):
+    location = " ".join(args)
+    if location.lower() == bot.first_name.lower():
+        update.effective_message.reply_text("Its always banhammer time for me!")
+        bot.send_sticker(update.effective_chat.id, BAN_STICKER)
+        return
+
+    res = requests.get(GMAPS_LOC, params=dict(address=location))
+
+    if res.status_code == 200:
+        loc = json.loads(res.text)
+        if loc.get('status') == 'OK':
+            lat = loc['results'][0]['geometry']['location']['lat']
+            long = loc['results'][0]['geometry']['location']['lng']
+
+            country = None
+            city = None
+
+            address_parts = loc['results'][0]['address_components']
+            for part in address_parts:
+                if 'country' in part['types']:
+                    country = part.get('long_name')
+                if 'administrative_area_level_1' in part['types'] and not city:
+                    city = part.get('long_name')
+                if 'locality' in part['types']:
+                    city = part.get('long_name')
+
+            if city and country:
+                location = "{}, {}".format(city, country)
+            elif country:
+                location = country
+
+            timenow = int(datetime.utcnow().timestamp())
+            res = requests.get(GMAPS_TIME, params=dict(location="{},{}".format(lat, long), timestamp=timenow))
+            if res.status_code == 200:
+                offset = json.loads(res.text)['dstOffset']
+                timestamp = json.loads(res.text)['rawOffset']
+                time_there = datetime.fromtimestamp(timenow + timestamp + offset).strftime("%H:%M:%S on %A %d %B")
+                update.message.reply_text("It's {} in {}".format(time_there, location))
+
+
+@run_async
 def echo(bot: Bot, update: Update):
-    message = update.effective_message
-    message.delete()
     args = update.effective_message.text.split(None, 1)
+    message = update.effective_message
     if message.reply_to_message:
         message.reply_to_message.reply_text(args[1])
     else:
         message.reply_text(args[1], quote=False)
-
-
-@user_is_gbanned
-@run_async
-def reply_keyboard_remove(bot: Bot, update: Update):
-    reply_keyboard = []
-    reply_keyboard.append([
-        ReplyKeyboardRemove(
-            remove_keyboard=True
-        )
-    ])
-    reply_markup = ReplyKeyboardRemove(
-        remove_keyboard=True
-    )
-    old_message = bot.send_message(
-        chat_id=update.message.chat_id,
-        text='trying',
-        reply_markup=reply_markup,
-        reply_to_message_id=update.message.message_id
-    )
-    bot.delete_message(
-        chat_id=update.message.chat_id,
-        message_id=old_message.message_id
-    )
+    message.delete()
 
 
 @run_async
 def gdpr(bot: Bot, update: Update):
-    update.effective_message.reply_text(tld(update.effective_chat.id, "Deleting identifiable data..."))
+    update.effective_message.reply_text("Deleting identifiable data...")
     for mod in GDPR:
         mod.__gdpr__(update.effective_user.id)
 
-    update.effective_message.reply_text(tld(update.effective_chat.id, "send_gdpr"), parse_mode=ParseMode.MARKDOWN)
+    update.effective_message.reply_text("Your personal data has been deleted.\n\nNote that this will not unban "
+                                        "you from any chats, as that is telegram data, not Marie data. "
+                                        "Flooding, warns, and gbans are also preserved, as of "
+                                        "[this](https://ico.org.uk/for-organisations/guide-to-the-general-data-protection-regulation-gdpr/individual-rights/right-to-erasure/), "
+                                        "which clearly states that the right to erasure does not apply "
+                                        "\"for the performance of a task carried out in the public interest\", as is "
+                                        "the case for the aforementioned pieces of data.",
+                                        parse_mode=ParseMode.MARKDOWN)
 
 
-@user_is_gbanned
+MARKDOWN_HELP = """
+Markdown is a very powerful formatting tool supported by telegram. {} has some enhancements, to make sure that \
+saved messages are correctly parsed, and to allow you to create buttons.
+- <code>_italic_</code>: wrapping text with '_' will produce italic text
+- <code>*bold*</code>: wrapping text with '*' will produce bold text
+- <code>`code`</code>: wrapping text with '`' will produce monospaced text, also known as 'code'
+- <code>[sometext](someURL)</code>: this will create a link - the message will just show <code>sometext</code>, \
+and tapping on it will open the page at <code>someURL</code>.
+EG: <code>[test](example.com)</code>
+- <code>[buttontext](buttonurl:someURL)</code>: this is a special enhancement to allow users to have telegram \
+buttons in their markdown. <code>buttontext</code> will be what is displayed on the button, and <code>someurl</code> \
+will be the url which is opened.
+EG: <code>[This is a button](buttonurl:example.com)</code>
+If you want multiple buttons on the same line, use :same, as such:
+<code>[one](buttonurl://example.com)
+[two](buttonurl://google.com:same)</code>
+This will create two buttons on a single line, instead of one button per line.
+Keep in mind that your message <b>MUST</b> contain some text other than just a button!
+""".format(dispatcher.bot.first_name)
+
+
 @run_async
 def markdown_help(bot: Bot, update: Update):
-    chat = update.effective_chat  # type: Optional[Chat]
-    update.effective_message.reply_text(tld(chat.id, "MARKDOWN_HELP-K"), parse_mode=ParseMode.HTML)
-    update.effective_message.reply_text(tld(chat.id, "Try forwarding the following message to me, and you'll see!"))
-    update.effective_message.reply_text(tld(chat.id, "/save test This is a markdown test. _italics_, *bold*, `code`, "
+    update.effective_message.reply_text(MARKDOWN_HELP, parse_mode=ParseMode.HTML)
+    update.effective_message.reply_text("Try forwarding the following message to me, and you'll see!")
+    update.effective_message.reply_text("/save test This is a markdown test. _italics_, *bold*, `code`, "
                                         "[URL](example.com) [button](buttonurl:github.com) "
-                                        "[button2](buttonurl://google.com:same)"))
+                                        "[button2](buttonurl://google.com:same)")
 
 
 @run_async
 def stats(bot: Bot, update: Update):
     update.effective_message.reply_text("Current stats:\n" + "\n".join([mod.__stats__() for mod in STATS]))
 
-
-@user_is_gbanned
 @run_async
-def ping(bot: Bot, update: Update):
-    tg_api = ping3('api.telegram.org', count=4)
-    google = ping3('google.com', count=4)
-    print(google)
-    text = "*Pong!*\n"
-    text += "Average speed to Telegram bot API server - `{}` ms\n".format(tg_api.rtt_avg_ms)
-    if google.rtt_avg:
-        gspeed = google.rtt_avg
+def stickerid(bot: Bot, update: Update):
+    msg = update.effective_message
+    if msg.reply_to_message and msg.reply_to_message.sticker:
+        update.effective_message.reply_text("Hello " +
+                                            "[{}](tg://user?id={})".format(msg.from_user.first_name, msg.from_user.id)
+                                            + ", The sticker id you are replying is :\n```" + 
+                                            escape_markdown(msg.reply_to_message.sticker.file_id) + "```",
+                                            parse_mode=ParseMode.MARKDOWN)
     else:
-        gspeed = google.rtt_avg
-    text += "Average speed to Google - `{}` ms".format(gspeed)
-    update.effective_message.reply_text(text, parse_mode=ParseMode.MARKDOWN)
-
-#def google(bot: Bot, update: Update):
-#        query = update.effective_message.text.split(" ",1)
-#        result_ = subprocess.run(['gsearch', str(query[1])], stdout=subprocess.PIPE)
-#        result = str(result_.stdout.decode())
-#        update.effective_message.reply_text('*Searching:*\n`' + str(query[1]) + '`\n\n*RESULTS:*\n' + result, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
-
-
-@user_is_gbanned
+        update.effective_message.reply_text("Hello " + "[{}](tg://user?id={})".format(msg.from_user.first_name,
+                                            msg.from_user.id) + ", Please reply to sticker message to get id sticker",
+                                            parse_mode=ParseMode.MARKDOWN)
 @run_async
-def github(bot: Bot, update: Update):
-    message = update.effective_message
-    text = message.text[len('/git '):]
-    usr = get(f'https://api.github.com/users/{text}').json()
-    if usr.get('login'):
-        text = f"*Username:* [{usr['login']}](https://github.com/{usr['login']})"
-
-        whitelist = ['name', 'id', 'type', 'location', 'blog',
-                     'bio', 'followers', 'following', 'hireable',
-                     'public_gists', 'public_repos', 'email',
-                     'company', 'updated_at', 'created_at']
-
-        difnames = {'id': 'Account ID', 'type': 'Account type', 'created_at': 'Account created at',
-                    'updated_at': 'Last updated', 'public_repos': 'Public Repos', 'public_gists': 'Public Gists'}
-
-        goaway = [None, 0, 'null', '']
-
-        for x, y in usr.items():
-            if x in whitelist:
-                if x in difnames:
-                    x = difnames[x]
-                else:
-                    x = x.title()
-
-                if x == 'Account created at' or x == 'Last updated':
-                    y = datetime.strptime(y, "%Y-%m-%dT%H:%M:%SZ")
-
-                if y not in goaway:
-                    if x == 'Blog':
-                        x = "Website"
-                        y = f"[Here!]({y})"
-                        text += ("\n*{}:* {}".format(x, y))
-                    else:
-                        text += ("\n*{}:* `{}`".format(x, y))
-        reply_text = text
+def getsticker(bot: Bot, update: Update):
+    msg = update.effective_message
+    chat_id = update.effective_chat.id
+    if msg.reply_to_message and msg.reply_to_message.sticker:
+        bot.sendChatAction(chat_id, "typing")
+        update.effective_message.reply_text("Hello " + "[{}](tg://user?id={})".format(msg.from_user.first_name,
+                                            msg.from_user.id) + ", Please check the file you requested below."
+                                            "\nPlease use this feature wisely!",
+                                            parse_mode=ParseMode.MARKDOWN)
+        bot.sendChatAction(chat_id, "upload_document")
+        file_id = msg.reply_to_message.sticker.file_id
+        newFile = bot.get_file(file_id)
+        newFile.download('sticker.png')
+        bot.sendDocument(chat_id, document=open('sticker.png', 'rb'))
+        bot.sendChatAction(chat_id, "upload_photo")
+        bot.send_photo(chat_id, photo=open('sticker.png', 'rb'))
+        
     else:
-        reply_text = "User not found. Make sure you entered valid username!"
-    message.reply_text(reply_text, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
+        bot.sendChatAction(chat_id, "typing")
+        update.effective_message.reply_text("Hello " + "[{}](tg://user?id={})".format(msg.from_user.first_name,
+                                            msg.from_user.id) + ", Please reply to sticker message to get sticker image",
+                                            parse_mode=ParseMode.MARKDOWN)
 
-
-@user_is_gbanned
-@run_async
-def repo(bot: Bot, update: Update, args: List[str]):
-    message = update.effective_message
-    text = message.text[len('/repo '):]
-    usr = get(f'https://api.github.com/users/{text}/repos?per_page=40').json()
-    reply_text = "*Repo*\n"
-    for i in range(len(usr)):
-        reply_text += f"[{usr[i]['name']}]({usr[i]['html_url']})\n"
-    message.reply_text(reply_text, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
-
-
-LYRICSINFO = "\n[Full Lyrics](http://lyrics.wikia.com/wiki/%s:%s)"
-
-
-@user_is_gbanned
-@run_async
-def lyrics(bot: Bot, update: Update, args: List[str]):
-    message = update.effective_message
-    text = message.text[len('/lyrics '):]
-    song = " ".join(args).split("- ")
-    reply_text = f'Looks up for lyrics'
-    
-    if len(song) == 2:
-        while song[1].startswith(" "):
-            song[1] = song[1][1:]
-        while song[0].startswith(" "):
-            song[0] = song[0][1:]
-        while song[1].endswith(" "):
-            song[1] = song[1][:-1]
-        while song[0].endswith(" "):
-            song[0] = song[0][:-1]
-        try:
-            lyrics = "\n".join(PyLyrics.getLyrics(
-                song[0], song[1]).split("\n")[:20])
-        except ValueError as e:
-            return update.effective_message.reply_text("Song %s not found :(" % song[1], failed=True)
-        else:
-            lyricstext = LYRICSINFO % (song[0].replace(
-                " ", "_"), song[1].replace(" ", "_"))
-            return update.effective_message.reply_text(lyrics + lyricstext, parse_mode="MARKDOWN")
-    else:
-        return update.effective_message.reply_text("Invalid syntax! Try Artist - Song name .For example, Luis Fonsi - Despacito", failed=True)
-
-
-BASE_URL = 'https://del.dog'
-
-
-@user_is_gbanned
-@run_async
-def paste(bot: Bot, update: Update, args: List[str]):
-    message = update.effective_message
-
-    if message.reply_to_message:
-        data = message.reply_to_message.text
-    elif len(args) >= 1:
-        data = message.text.split(None, 1)[1]
-    else:
-        message.reply_text("What am I supposed to do with this?!")
-        return
-
-    r = requests.post(f'{BASE_URL}/documents', data=data.encode('utf-8'))
-
-    if r.status_code == 404:
-        update.effective_message.reply_text('Failed to reach dogbin')
-        r.raise_for_status()
-
-    res = r.json()
-
-    if r.status_code != 200:
-        update.effective_message.reply_text(res['message'])
-        r.raise_for_status()
-
-    key = res['key']
-    if res['isUrl']:
-        reply = f'Shortened URL: {BASE_URL}/{key}\nYou can view stats, etc. [here]({BASE_URL}/v/{key})'
-    else:
-        reply = f'{BASE_URL}/{key}'
-    update.effective_message.reply_text(reply, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
-
-
-@user_is_gbanned
-@run_async
-def get_paste_content(bot: Bot, update: Update, args: List[str]):
-    message = update.effective_message
-
-    if len(args) >= 1:
-        key = args[0]
-    else:
-        message.reply_text("Please supply a paste key!")
-        return
-
-    format_normal = f'{BASE_URL}/'
-    format_view = f'{BASE_URL}/v/'
-
-    if key.startswith(format_view):
-        key = key[len(format_view):]
-    elif key.startswith(format_normal):
-        key = key[len(format_normal):]
-
-    r = requests.get(f'{BASE_URL}/raw/{key}')
-
-    if r.status_code != 200:
-        try:
-            res = r.json()
-            update.effective_message.reply_text(res['message'])
-        except Exception:
-            if r.status_code == 404:
-                update.effective_message.reply_text('Failed to reach dogbin')
-            else:
-                update.effective_message.reply_text('Unknown error occured')
-        r.raise_for_status()
-
-    update.effective_message.reply_text('```' + escape_markdown(r.text) + '```', parse_mode=ParseMode.MARKDOWN)
-
-
-@user_is_gbanned
-@run_async
-def get_paste_stats(bot: Bot, update: Update, args: List[str]):
-    message = update.effective_message
-
-    if len(args) >= 1:
-        key = args[0]
-    else:
-        message.reply_text("Please supply a paste key!")
-        return
-
-    format_normal = f'{BASE_URL}/'
-    format_view = f'{BASE_URL}/v/'
-
-    if key.startswith(format_view):
-        key = key[len(format_view):]
-    elif key.startswith(format_normal):
-        key = key[len(format_normal):]
-
-    r = requests.get(f'{BASE_URL}/documents/{key}')
-
-    if r.status_code != 200:
-        try:
-            res = r.json()
-            update.effective_message.reply_text(res['message'])
-        except Exception:
-            if r.status_code == 404:
-                update.effective_message.reply_text('Failed to reach dogbin')
-            else:
-                update.effective_message.reply_text('Unknown error occured')
-        r.raise_for_status()
-
-    document = r.json()['document']
-    key = document['_id']
-    views = document['viewCount']
-    reply = f'Stats for **[/{key}]({BASE_URL}/{key})**:\nViews: `{views}`'
-    update.effective_message.reply_text(reply, parse_mode=ParseMode.MARKDOWN)
-
-
-@user_is_gbanned
-@run_async
-def ud(bot: Bot, update: Update):
-  message = update.effective_message
-  text = message.text[len('/ud '):]
-  results = get(f'http://api.urbandictionary.com/v0/define?term={text}').json()
-  reply_text = f'Word: {text}\nDefinition: {results["list"][0]["definition"]}'
-  message.reply_text(reply_text)
-
-
-@user_is_gbanned
-@run_async
-def execute(bot: Bot, update: Update, args: List[str]):
-
-    message = update.effective_message
-    text = ' '.join(args)
-    regex = re.search('^([\w.#+]+)\s+([\s\S]+?)(?:\s+\/stdin\s+([\s\S]+))?$', text, re.IGNORECASE)
-
-    if not regex:
-        available_languages = ', '.join(languages.keys())
-        message.reply_text('*The availale languages are:*\n`{}`'.format(available_languages), parse_mode=ParseMode.MARKDOWN)
-        return
-
-    language = regex.group(1)
-    code = regex.group(2)
-    stdin = regex.group(3)
-
-    try:
-        regexter = Rextester(language, code, stdin)
-    except CompilerError as exc: # Exception on empy code or missing output
-        message.reply_text(exc)
-        return
-
-    output = ""
-    output += "*Language:*\n`{}`".format(language)
-    output += "*\n\nSource:*\n`{}`".format(code)
-
-    if regexter.result:
-        output += "*\n\nResult:*\n`{}`".format(regexter.result)
-
-    if regexter.warnings:
-        output += "\n\n*Warnings:*\n`{}`\n".format(regexter.warnings)
-
-    if regexter.errors:
-        output += "\n\n*Errors:*\n'{}`".format(regexter.errors)
-
-    message.reply_text(output, parse_mode=ParseMode.MARKDOWN)
-
-
-@user_is_gbanned
-@run_async
-def wiki(bot: Bot, update: Update):
-    kueri = re.split(pattern="wiki", string=update.effective_message.text)
-    wikipedia.set_lang("en")
-    if len(str(kueri[1])) == 0:
-        update.effective_message.reply_text("Enter keywords!")
-    else:
-        try:
-            pertama = update.effective_message.reply_text("🔄 Loading...")
-            keyboard = InlineKeyboardMarkup([[InlineKeyboardButton(text="🔧 More Info...", url=wikipedia.page(kueri).url)]])
-            bot.editMessageText(chat_id=update.effective_chat.id, message_id=pertama.message_id, text=wikipedia.summary(kueri, sentences=10), reply_markup=keyboard)
-        except wikipedia.PageError as e:
-            update.effective_message.reply_text(f"⚠ Error: {e}")
-        except BadRequest as et :
-            update.effective_message.reply_text(f"⚠ Error: {et}")
-        except wikipedia.exceptions.DisambiguationError as eet:
-            update.effective_message.reply_text(f"⚠ Error\n There are too many query! Express it more!\nPossible query result:\n{eet}")
-
-
+# /ip is for private use
 __help__ = """
  - /id: get the current group id. If used by replying to a message, gets that user's id.
  - /runs: reply a random string from an array of replies.
- - /insults: reply a random string from an array of replies.
  - /slap: slap a user, or get slapped if not a reply.
+ - /time <place>: gives the local time at the given place.
  - /info: get information about a user.
  - /gdpr: deletes your information from the bot's database. Private chats only.
- - /stickerid: reply to a sticker to me to tell you its file ID.
- - /getsticker: reply to a sticker to me to upload its raw PNG file.
  - /markdownhelp: quick summary of how markdown works in telegram - can only be called in private chats.
-
- - /git: Returns info about a GitHub user or organization.
- - /repo: Return the GitHub user or organization repository list (Limited at 40)
- - /lyrics: Find your favorite songs lyrics!
- - /paste: Create a paste or a shortened url using [dogbin](https://del.dog)
- - /getpaste: Get the content of a paste or shortened url from [dogbin](https://del.dog)
- - /pastestats: Get stats of a paste or shortened url from [dogbin](https://del.dog)
- - /ud: Type the word or expression you want to search. For example /ud Gay
- - /removebotkeyboard: Got a nasty bot keyboard stuck in your group?
- - /exec <language> <code> [/stdin <stdin>]: Execute a code in a specified language. Send an empty command to get the supported languages.
- - /wiki <keywords>: Get wikipedia articles just using this bot!
+ - /stickerid: reply to a sticker and get sticker id of that.
+ - /getsticker: reply to a sticker and get that sticker as .png and image. 
 """
 
 __mod_name__ = "Misc"
 
-ID_HANDLER = DisableAbleCommandHandler("id", get_id, pass_args=True, admin_ok=True)
-IP_HANDLER = CommandHandler("ip", get_bot_ip, filters=Filters.chat(OWNER_ID), admin_ok=True)
-PING_HANDLER = DisableAbleCommandHandler("ping", ping, admin_ok=True)
-#GOOGLE_HANDLER = DisableAbleCommandHandler("google", google)
-LYRICS_HANDLER = DisableAbleCommandHandler("lyrics", lyrics, pass_args=True, admin_ok=True)
+ID_HANDLER = DisableAbleCommandHandler("id", get_id, pass_args=True)
+IP_HANDLER = CommandHandler("ip", get_bot_ip, filters=Filters.chat(OWNER_ID))
 
+TIME_HANDLER = CommandHandler("time", get_time, pass_args=True)
 
-INSULTS_HANDLER = DisableAbleCommandHandler("insults", insults, admin_ok=True)
-RUNS_HANDLER = DisableAbleCommandHandler("runs", runs, admin_ok=True)
-SLAP_HANDLER = DisableAbleCommandHandler("slap", slap, pass_args=True, admin_ok=True)
-INFO_HANDLER = DisableAbleCommandHandler("info", info, pass_args=True, admin_ok=True)
-GITHUB_HANDLER = DisableAbleCommandHandler("git", github, admin_ok=True)
-REPO_HANDLER = DisableAbleCommandHandler("repo", repo, pass_args=True, admin_ok=True)
+RUNS_HANDLER = DisableAbleCommandHandler("runs", runs)
+SLAP_HANDLER = DisableAbleCommandHandler("slap", slap, pass_args=True)
+INFO_HANDLER = DisableAbleCommandHandler("info", info, pass_args=True)
 
 ECHO_HANDLER = CommandHandler("echo", echo, filters=Filters.user(OWNER_ID))
 MD_HELP_HANDLER = CommandHandler("markdownhelp", markdown_help, filters=Filters.private)
 
-STATS_HANDLER = CommandHandler("stats", stats, filters=Filters.user(OWNER_ID))
+STATS_HANDLER = CommandHandler("stats", stats, filters=CustomFilters.sudo_filter)
 GDPR_HANDLER = CommandHandler("gdpr", gdpr, filters=Filters.private)
-EXECUTE_HANDLER = CommandHandler("exec", execute, pass_args=True, filters=CustomFilters.sudo_filter)
 
-PASTE_HANDLER = DisableAbleCommandHandler("paste", paste, pass_args=True)
-GET_PASTE_HANDLER = DisableAbleCommandHandler("getpaste", get_paste_content, pass_args=True)
-PASTE_STATS_HANDLER = DisableAbleCommandHandler("pastestats", get_paste_stats, pass_args=True)
-UD_HANDLER = DisableAbleCommandHandler("ud", ud)
-WIKI_HANDLER = DisableAbleCommandHandler("wiki", wiki)
+STICKERID_HANDLER = DisableAbleCommandHandler("stickerid", stickerid)
+GETSTICKER_HANDLER = DisableAbleCommandHandler("getsticker", getsticker)
 
 
-dispatcher.add_handler(UD_HANDLER)
-dispatcher.add_handler(PASTE_HANDLER)
-dispatcher.add_handler(GET_PASTE_HANDLER)
-dispatcher.add_handler(PASTE_STATS_HANDLER)
 dispatcher.add_handler(ID_HANDLER)
 dispatcher.add_handler(IP_HANDLER)
-dispatcher.add_handler(INSULTS_HANDLER)
+dispatcher.add_handler(TIME_HANDLER)
 dispatcher.add_handler(RUNS_HANDLER)
 dispatcher.add_handler(SLAP_HANDLER)
 dispatcher.add_handler(INFO_HANDLER)
@@ -611,11 +474,5 @@ dispatcher.add_handler(ECHO_HANDLER)
 dispatcher.add_handler(MD_HELP_HANDLER)
 dispatcher.add_handler(STATS_HANDLER)
 dispatcher.add_handler(GDPR_HANDLER)
-dispatcher.add_handler(PING_HANDLER)
-#dispatcher.add_handler(GOOGLE_HANDLER)
-dispatcher.add_handler(GITHUB_HANDLER)
-dispatcher.add_handler(LYRICS_HANDLER)
-dispatcher.add_handler(REPO_HANDLER)
-dispatcher.add_handler(DisableAbleCommandHandler("removebotkeyboard", reply_keyboard_remove))
-dispatcher.add_handler(EXECUTE_HANDLER)
-dispatcher.add_handler(WIKI_HANDLER)
+dispatcher.add_handler(STICKERID_HANDLER)
+dispatcher.add_handler(GETSTICKER_HANDLER)
