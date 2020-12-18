@@ -150,7 +150,7 @@ def send_start(bot, update):
 
     keyboard = [[InlineKeyboardButton(text="🇮🇳 Language", callback_data="set_lang_")]]
     keyboard = [[
-        InlineKeyboardButton(text=Support Group(chat.id, 'main_start_btn_support'),
+        InlineKeyboardButton(text=Support Group,
                              url="https://t.me/HarukaAyaGroup"), 
         InlineKeyboardButton(text="❔ Help", callback_data="help_back")]]
 
