@@ -151,7 +151,7 @@ def send_start(bot, update):
     keyboard = [[InlineKeyboardButton(text="Add Me To A Group", url="http://t.me/miss_arantxabot?startgroup=true")]]
     keyboard = [[InlineKeyboardButton(text="🇮🇳 Language 🇮🇳", callback_data="set_lang_")]]
     keyboard = [[InlineKeyboardButton(text="🇮🇳 Language 🇮🇳", callback_data="set_lang_")]]
-    keyboard += [[InlineKeyboardButton(text="🛠 Support Group 🛠", url="https://t.me/arantxasupport"), 
+    keyboard += [[InlineKeyboardButton(text="🛠 repo Group 🛠", url="https://t.me/arantxasupport"), 
         InlineKeyboardButton(text="❔ Help ❔", callback_data="help_back")]]
 
     update.effective_message.reply_text(PM_START.format(escape_markdown(first_name), bot.first_name), reply_markup=InlineKeyboardMarkup(keyboard), disable_web_page_preview=True, parse_mode=ParseMode.MARKDOWN)
