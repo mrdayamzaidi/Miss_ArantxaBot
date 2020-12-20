@@ -147,8 +147,8 @@ def send_start(bot, update):
     first_name = update.effective_user.first_name 
     text = PM_START
 
-    keyboard = [[InlineKeyboardButton(text="Add Me To A Group", url="http://t.me/miss_arantxabot?startgroup=true"),
-        InlineKeyBoardButton(text= "🇮🇳 Language 🇮🇳", callback_data="set_lang_")]]
+    keyboard = [[InlineKeyboardButton(text="Add Me To A Group", url="http://t.me/miss_arantxabot?startgroup=true")]]
+    keyboard = [[InlineKeyBoardButton(text= "🇮🇳 Language 🇮🇳", callback_data="set_lang_")]]
     keyboard += [[InlineKeyboardButton(text="🛠 Support Group 🛠", url="https://t.me/arantxasupport"), 
         InlineKeyboardButton(text="❔ Help ❔", callback_data="help_back")]]
 
