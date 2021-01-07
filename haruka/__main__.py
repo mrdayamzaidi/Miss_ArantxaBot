@@ -26,7 +26,7 @@ You Know How Hard It Is Sometimes To Manage Group So Here Is The Solution For Yo
 
 I'm Arantxa A Group Manager Bot.
 
-I Am Purly Made In 🇮🇳India🇮🇳 By [WhiteEyeDevs](https://t.me/whiteeyedevs)
+I Am Purly Made In 🇮🇳India🇮🇳 By [WhiteEyeBots](https://t.me/WhiteEyeBots)
 
 Click /help Or Help Button Below To FInd Out More About How To Use Me To My Full Potential.
 
@@ -148,7 +148,7 @@ def send_start(bot, update):
     text = PM_START
 
     keyboard = [[InlineKeyboardButton(text="Add Me To A Group", url="http://t.me/miss_arantxabot?startgroup=true")]]
-    keyboard += [[InlineKeyboardButton(text="🛠 Support Group 🛠", url="https://t.me/arantxasupport"), 
+    keyboard += [[InlineKeyboardButton(text="🛠 Support Group 🛠", url="https://t.me/whiteeyebotschat"), 
         InlineKeyboardButton(text="❔ Help ❔", callback_data="help_back")]]
 
     update.effective_message.reply_text(PM_START.format(escape_markdown(first_name), bot.first_name), reply_markup=InlineKeyboardMarkup(keyboard), disable_web_page_preview=True, parse_mode=ParseMode.MARKDOWN)
