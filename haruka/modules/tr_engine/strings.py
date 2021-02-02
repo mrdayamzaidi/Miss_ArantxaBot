@@ -96,5 +96,3 @@ def tld_list(chat_id, t):
 #             return False
 #     else:
 #         return False
-
-# go
